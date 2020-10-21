@@ -20,18 +20,14 @@ export interface Question {
   vol: number;
 }
 
-//let choice: Choice = Choice.A;
-
-/*
-  function to execute when the user confirms an answer or time runs out
-  if time runs out then choice = "timeRanOut"
-*/
+//function to execute when the user confirms an answer or time runs out
 export const confirmChoice = function (
   user: User,
   question: Question,
   userAnswer: Choice
 ) {
   //initiate the settings for glicko2
+  //maybe move settings outside of the function
   const settings = {
     tau: 0.5,
     rating: 1500,
@@ -42,29 +38,29 @@ export const confirmChoice = function (
   // create an instance of glicko2 with the above settings
   const ranking = new glicko2.Glicko2(settings);
 
-  //create a player to simulate the user
+  //create a player for the user
   const userPlayer = ranking.makePlayer(user.rating, user.rd, user.vol);
 
-  //create a player to simulate the question
+  //create a player for the question
   const questionPlayer = ranking.makePlayer(
     question.rating,
     question.rd,
     question.vol
   );
 
-  //we will actually have only one match
-  const matches = [];
+  //var to store the result
+  let result;
 
   if (userAnswer == question.correctAnswer) {
     //user answers correctly
-    matches.push([userPlayer, questionPlayer, 1]);
+    result = [userPlayer, questionPlayer, 1];
   } else {
     //user answers incorrectly
-    matches.push([userPlayer, questionPlayer, 0]);
+    result = [userPlayer, questionPlayer, 0];
   }
 
-  //update
-  ranking.updateRatings(matches);
+  //update the ranking ([] because updateRatings() metod expects an array of results)
+  ranking.updateRatings([result]);
 
   //update the actual user
   user.rating = userPlayer.getRating();
@@ -77,4 +73,5 @@ export const confirmChoice = function (
   question.vol = questionPlayer.getVol();
 
   //update the SEQ page
+  //...
 };
